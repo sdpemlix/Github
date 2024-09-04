@@ -103,9 +103,6 @@ async def run(model: str, user_input: str):
         # print(f"\nThe model used some tools")
         available_functions = {
             "get_flight_times": get_flight_times,
-            "get_antonyms": get_antonyms,
-            "weather_place": weather_place,
-            "confirmed_cases": confirmed_cases,
         }
         # print(f"\navailable_function: {available_functions}")
         for tool in response["message"]["tool_calls"]:
