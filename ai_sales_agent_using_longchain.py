@@ -16,7 +16,6 @@ from time import sleep
 
 class StageAnalyzerChain(LLMChain):
     """Chain to analyze which conversation stage should the conversation move into."""
-
     @classmethod
     def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
         ## The above class method returns an instance of the LLMChain class.
