@@ -1,3 +1,7 @@
+##NOT WORKING##
+
+## Code Is Not complete!
+
 import os
 os.environ['OPENAI_API_KEY'] = 'sk-USfmvs8JHne8BhoLkXYVEc8wUk0nLVEjm8p0x-hVdjT3BlbkFJgrZHM-DBZHUKJyMw6w2-9rjg_nzd-RbE_R8IgG6boA'
 ## Get your API keys from https://platform.openai.com/account/api-keys
