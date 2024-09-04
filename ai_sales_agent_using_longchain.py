@@ -233,5 +233,3 @@ while True:
         sales_agent.human_step(human)
         sleep(2)
         print("\n")
-    if user_input.lower() == "exit":
-        break
