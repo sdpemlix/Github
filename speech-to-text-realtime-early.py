@@ -1,3 +1,6 @@
+## UNCHECKED CODE ##
+## INSTALL pyaudio AND faster_whisper ##
+
 import os
 import time
 import wave
