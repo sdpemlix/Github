@@ -1,30 +1,15 @@
-##NOT WORKING##
-
-## Code Is Not complete!
-
 import os
-os.environ['OPENAI_API_KEY'] = 'sk-USfmvs8JHne8BhoLkXYVEc8wUk0nLVEjm8p0x-hVdjT3BlbkFJgrZHM-DBZHUKJyMw6w2-9rjg_nzd-RbE_R8IgG6boA'
-## Get your API keys from https://platform.openai.com/account/api-keys
-
 from typing import Dict, List, Any
 from langchain import LLMChain, PromptTemplate
 from langchain.llms import BaseLLM
 from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
-from langchain.chat_models import ChatOpenAI
+from langchain_ollama import OllamaLLM  # Import Ollama LLM
 from time import sleep
 
 class StageAnalyzerChain(LLMChain):
-    """Chain to analyze which conversation stage should the conversation move into."""
     @classmethod
     def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
-        ## The above class method returns an instance of the LLMChain class.
-
-        ## The StageAnalyzerChain class is designed to be used as a tool for analyzing which
-        ## conversation stage should the conversation move into. It does this by generating
-        ## responses to prompts that ask the user to select the next stage of the conversation
-        ## based on the conversation history.
-        """Get the response parser."""
         stage_analyzer_inception_prompt_template = (
             """You are a sales assistant helping your sales agent to determine which stage of a sales conversation should the agent move to, or stay at.
             Following '===' is the conversation history.
@@ -47,7 +32,7 @@ class StageAnalyzerChain(LLMChain):
             The answer needs to be one number only, no words.
             If there is no conversation history, output 1.
             Do not answer anything else nor add anything to you answer."""
-            )
+        )
         prompt = PromptTemplate(
             template=stage_analyzer_inception_prompt_template,
             input_variables=["conversation_history"],
@@ -55,11 +40,8 @@ class StageAnalyzerChain(LLMChain):
         return cls(prompt=prompt, llm=llm, verbose=verbose)
 
 class SalesConversationChain(LLMChain):
-    """Chain to generate the next utterance for the conversation."""
-
     @classmethod
     def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
-        """Get the response parser."""
         sales_agent_inception_prompt = (
         """Never forget your name is {salesperson_name}. You work as a {salesperson_role}.
         You work at company named {company_name}. {company_name}'s business is the following: {company_business}
@@ -101,11 +83,9 @@ class SalesConversationChain(LLMChain):
         )
         return cls(prompt=prompt, llm=llm, verbose=verbose)
 
-llm = ChatOpenAI(temperature=0.9)
+llm = OllamaLLM(model="llama3.1")  # Use Ollama LLM
 
 class SalesGPT(Chain):
-    """Controller model for the Sales Agent."""
-
     conversation_history: List[str] = []
     current_conversation_stage: str = '1'
     stage_analyzer_chain: StageAnalyzerChain = Field(...)
@@ -118,7 +98,7 @@ class SalesGPT(Chain):
         '5': "Solution presentation: Based on the prospect's needs, present your product/service as the solution that can address their pain points.",
         '6': "Objection handling: Address any objections that the prospect may have regarding your product/service. Be prepared to provide evidence or testimonials to support your claims.",
         '7': "Close: Ask for the sale by proposing a next step. This could be a demo, a trial or a meeting with decision-makers. Ensure to summarize what has been discussed and reiterate the benefits."
-        }
+    }
 
     salesperson_name: str = "Ted Lasso"
     salesperson_role: str = "Business Development Representative"
@@ -140,7 +120,6 @@ class SalesGPT(Chain):
         return []
 
     def seed_agent(self):
-        # Step 1: seed the conversation
         self.current_conversation_stage= self.retrieve_conversation_stage('1')
         self.conversation_history = []
 
@@ -153,7 +132,6 @@ class SalesGPT(Chain):
         print(f"\n<Conversation Stage>: {self.current_conversation_stage}\n")
 
     def human_step(self, human_input):
-        # process human input
         human_input = human_input + '<END_OF_TURN>'
         self.conversation_history.append(human_input)
 
@@ -161,9 +139,6 @@ class SalesGPT(Chain):
         self._call(inputs={})
 
     def _call(self, inputs: Dict[str, Any]) -> None:
-        """Run one step of the sales agent."""
-
-        # Generate agent's utterance
         ai_message = self.sales_conversation_utterance_chain.run(
             salesperson_name = self.salesperson_name,
             salesperson_role= self.salesperson_role,
@@ -173,10 +148,9 @@ class SalesGPT(Chain):
             conversation_purpose = self.conversation_purpose,
             conversation_history="\n".join(self.conversation_history),
             conversation_stage = self.current_conversation_stage,
-            conversation_type=self.conversation_type
+              conversation_type=self.conversation_type
         )
 
-        # Add agent's response to conversation history
         self.conversation_history.append(ai_message)
 
         print(f'\n{self.salesperson_name}: ', ai_message.rstrip('<END_OF_TURN>'))
@@ -186,7 +160,6 @@ class SalesGPT(Chain):
     def from_llm(
         cls, llm: BaseLLM, verbose: bool = False, **kwargs
     ) -> "SalesGPT":
-        """Initialize the SalesGPT Controller."""
         stage_analyzer_chain = StageAnalyzerChain.from_llm(llm, verbose=verbose)
         sales_conversation_utterance_chain = SalesConversationChain.from_llm(
             llm, verbose=verbose
@@ -199,7 +172,6 @@ class SalesGPT(Chain):
             **kwargs,
         )
 
-# Conversation stages - can be modified
 conversation_stages = {
 '1' : "Introduction: Start the conversation by introducing yourself and your company. Be polite and respectful while keeping the tone of the conversation professional. Your greeting should be welcoming. Always clarify in your greeting the reason why you are contacting the prospect.",
 '2': "Qualification: Qualify the prospect by confirming if they are the right person to talk to regarding your product/service. Ensure that they have the authority to make purchasing decisions.",
@@ -223,7 +195,6 @@ config = dict(
 )
 
 sales_agent = SalesGPT.from_llm(llm, verbose=False, **config)
-# init sales agent
 sales_agent.seed_agent()
 
 while True:
