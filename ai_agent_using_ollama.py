@@ -6,7 +6,8 @@ from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain_ollama import OllamaLLM  # Import Ollama LLM
 from time import sleep
-
+from tools import get_tools, setup_knowledge_base
+from prompts import SALES_AGENT_TOOLS_PROMPT
 class StageAnalyzerChain(LLMChain):
     @classmethod
     def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
@@ -99,7 +100,7 @@ class SalesGPT(Chain):
         '6': "Objection handling: Address any objections that the prospect may have regarding your product/service. Be prepared to provide evidence or testimonials to support your claims.",
         '7': "Close: Ask for the sale by proposing a next step. This could be a demo, a trial or a meeting with decision-makers. Ensure to summarize what has been discussed and reiterate the benefits."
     }
-
+    use_tools: bool = True
     salesperson_name: str = "Ted Lasso"
     salesperson_role: str = "Business Development Representative"
     company_name: str = "Sleep Haven"
