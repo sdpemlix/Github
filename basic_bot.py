@@ -7,21 +7,8 @@ from pydub import AudioSegment
 import pygame
 import pyttsx3
 from io import BytesIO
+import asyncio
 
-'''engine = pyttsx3.init()
-
-def SpeakText(command):
-    global engine
-    # Stop any ongoing speech
-    engine.stop()
-    
-    # Create a new thread for speaking
-    def speak():
-        engine.say(command)
-        engine.runAndWait()
-    
-    # Start the new thread
-    threading.Thread(target=speak).start()'''
 # Initialize pygame mixer
 pygame.mixer.init()
 
@@ -61,18 +48,17 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 # Function to capture and transcribe audio
-def transcribe_audio():
+async def transcribe_audio():
     transcriptions = []
 
-    def recognize_speech(audio):
+    async def recognize_speech(audio):
         try:
             print("Transcribing...")
             text = recognizer.recognize_google(audio)
             print(f"Transcript: {text}")
             transcriptions.append(text)
-            response = get_groq_response(text)
+            response = await get_groq_response(text)
             stream_text(response)
-            #SpeakText(response)
             if text.lower() == "exit":
                 print("Exiting the script.")
                 os._exit(0)
@@ -88,14 +74,14 @@ def transcribe_audio():
             try:
                 print("Listening...")
                 audio = recognizer.listen(source)
-                threading.Thread(target=recognize_speech, args=(audio,)).start()
+                await asyncio.create_task(recognize_speech(audio))
             except sr.WaitTimeoutError:
                 print("Listening timed out while waiting for phrase to start")
 
     return transcriptions
 
 # Function to get response from Groq API
-def get_groq_response(text):
+async def get_groq_response(text):
     try:
         chat_completion = client.chat.completions.create(
             messages=[
@@ -108,7 +94,7 @@ def get_groq_response(text):
                     "content": "Please provide a concise, one-line response."
                 }
             ],
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             temperature=1,
             max_tokens=1024,
             top_p=1,
@@ -121,7 +107,7 @@ def get_groq_response(text):
     return response
 
 if __name__ == "__main__":
-    transcriptions = transcribe_audio()
+    asyncio.run(transcribe_audio())
     print("All Transcriptions:")
     for i, transcription in enumerate(transcriptions, 1):
         print(f"{i}: {transcription}")
