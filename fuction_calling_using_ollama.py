@@ -98,18 +98,18 @@ async def run(model: str, user_input: str):
     # print(f"Conversation history:\n{messages}")
 
     # Check if the model decided to use the provided function
-    if not response["message"].get("tool_calls"):
+    if not response["message"].get("tool_call"):
         print("\nThe model didn't use the function. Its response was:")
         print(response["message"]["content"])
         return
 
-    if response["message"].get("tool_calls"):
+    if response["message"].get("tool_call"):
         # print(f"\nThe model used some tools")
         available_functions = {
             "get_flight_times": get_flight_times,
         }
         # print(f"\navailable_function: {available_functions}")
-        for tool in response["message"]["tool_calls"]:
+        for tool in response["message"]["tool_call"]:
             # print(f"available tools: {tool}")
             # tool: {'function': {'name': 'get_flight_times', 'arguments': {'arrival': 'LAX', 'departure': 'NYC'}}}
             function_to_call = available_functions[tool["function"]["name"]]
