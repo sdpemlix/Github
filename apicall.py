@@ -2,62 +2,6 @@ from groq import Groq
 import json
 import asyncio
 import nest_asyncio
-import requests
-import time
-
-
-def weather_place(place_name: str) -> str:
-
-    url = "https://weatherapi-com.p.rapidapi.com/forecast.json"
-
-    querystring = {"q": place_name, "days": "3"}
-
-    headers = {
-        "x-rapidapi-key": "b6dc2081ccmsh282bec1ffdb6254p10b966jsn0c43c4330ada",
-        "x-rapidapi-host": "weatherapi-com.p.rapidapi.com",
-    }
-
-    response = requests.get(url, headers=headers, params=querystring)
-    return json.dumps(
-        f"The weather in {response.json()['location']['name']} is {response.json()['current']}"
-    )
-
-
-# rapidapi.com
-def confirmed_cases(country_name: str) -> str:
-    url = "https://covid-19-data.p.rapidapi.com/country/code"
-
-    querystring = {"format": "json", "code": country_name[:2].upper()}
-
-    headers = {
-        "x-rapidapi-key": "b6dc2081ccmsh282bec1ffdb6254p10b966jsn0c43c4330ada",
-        "x-rapidapi-host": "covid-19-data.p.rapidapi.com",
-    }
-
-    response = requests.get(url, headers=headers, params=querystring)
-    return json.dumps(response.json()[0]["confirmed"])
-
-
-# for key in ["India", "USA", "Italy", "Australia", "Germany"]:
-#     a = confirmed_cases(key)
-#     print(a)
-#     print(type(a))
-#     time.sleep(2)
-
-
-def get_antonyms(word: str) -> str:
-    "Get the antonyms of the any given word"
-
-    words = {
-        "hot": "cold",
-        "small": "big",
-        "weak": "strong",
-        "light": "dark",
-        "lighten": "darken",
-        "dark": "bright",
-    }
-
-    return json.dumps(words.get(word, "Not available in database"))
 # Initialize Groq client
 def get_flight_times(departure: str, arrival: str) -> str:
     flights = {
@@ -134,58 +78,7 @@ def get_groq_response(text):
                         "required": ["departure", "arrival"],
                     },
                 },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_antonyms",
-                    "description": "Get the antonyms of any given words",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "word": {
-                                "type": "string",
-                                "description": "The word for which the opposite is required.",
-                            },
-                        },
-                        "required": ["word"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "weather_place",
-                    "description": "Get the weather condition of any particular place",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "place_name": {
-                                "type": "string",
-                                "description": "The place for which the weather data is required",
-                            },
-                        },
-                        "required": ["country_name"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "confirmed_cases",
-                    "description": "Get the number of confirmed COVID cases for this particular country",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "country_name": {
-                                "type": "string",
-                                "description": "The country for which the number of confirmed COVID cases is required.",
-                            },
-                        },
-                        "required": ["country_name"],
-                    },
-                },
-            },
+            }
         ]
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
@@ -200,9 +93,6 @@ def get_groq_response(text):
         if tool_calls:
             available_functions = {
                 "get_flight_times": get_flight_times,
-                "get_antonyms": get_antonyms,
-                "weather_place": weather_place,
-                "confirmed_cases": confirmed_cases,
             }
             messages.append(response_message)
             for tool_call in tool_calls:
