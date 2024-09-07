@@ -51,7 +51,7 @@ async def transcribe_audio():
             text = recognizer.recognize_google(audio)
             print(f"Transcript: {text}")
             transcriptions.append(text)
-            response =get_groq_response(text)
+            response =await get_groq_response(text)
             stream_text(response)
             if text.lower() == "exit":
                 print("Exiting the script.")

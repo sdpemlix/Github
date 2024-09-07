@@ -1,9 +1,6 @@
 from groq import Groq
 import json
-import asyncio
-import nest_asyncio
 import requests
-import time
 def weather_place(place_name: str) -> str:
     url = "https://weatherapi-com.p.rapidapi.com/forecast.json"
     querystring = {"q": place_name, "days": "3"}
@@ -62,40 +59,39 @@ client = Groq(api_key=api_key)
 def get_groq_response(text):
     messages = [
         {
+            "role": "system",
+            "content": "concise and short response."
+        },
+        {
             "role": "user",
             "content": text,
         },
-        {
-            "role": "system",
-            "content": "Please provide a concise, one-line response."
-        }
     ]
     try:
         tools = [
              {
                 "type": "function",
                 "function": {
-                    "name": "weather_place",
-                    "description": "Get the weather condition of any particular place",
+                    "name": "weather",
+                    "description":"Provides current weather information for a specified location.",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "place_name": {
                                 "type": "string",
                                 "description": "The place for which the weather data is required",
-                            },
+                            }
                         },
                         "required": ["place_name"],
                     },
                 },
-            },
+            }
         ]
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=messages,
+            model="llama3-groq-70b-8192-tool-use-preview",
             tools=tools,
             tool_choice="auto",
-            max_tokens=4096
+            messages=messages,
         )
         print(response.choices[0])
         response_message = response.choices[0].message
@@ -103,7 +99,7 @@ def get_groq_response(text):
         print(tool_calls)
         if tool_calls:
             available_functions = {
-                 "weather_place": weather_place,
+                 "weather": weather_place,
             }
             messages.append(response_message)
             for tool_call in tool_calls:
