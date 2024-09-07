@@ -115,6 +115,7 @@ def get_groq_response(text):
                 model="llama-3.1-8b-instant",
                 messages=messages
             )
+            print(f"Gorq:{response.choices[0].message.content}")
             return second_response.choices[0].message.content
         else:
             print(f"Gorq:{response.choices[0].message.content}")
