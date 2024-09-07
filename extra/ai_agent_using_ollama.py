@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain_ollama import OllamaLLM  # Import Ollama LLM
 from time import sleep
-from tools import get_tools, setup_knowledge_base
-from prompts import SALES_AGENT_TOOLS_PROMPT
+from extra.tools import get_tools, setup_knowledge_base
+from extra.prompts import SALES_AGENT_TOOLS_PROMPT
 class StageAnalyzerChain(LLMChain):
     @classmethod
     def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:

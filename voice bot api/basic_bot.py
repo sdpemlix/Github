@@ -52,7 +52,6 @@ async def transcribe_audio():
             print(f"Transcript: {text}")
             transcriptions.append(text)
             response =get_groq_response(text)
-            print(response)
             stream_text(response)
             if text.lower() == "exit":
                 print("Exiting the script.")
